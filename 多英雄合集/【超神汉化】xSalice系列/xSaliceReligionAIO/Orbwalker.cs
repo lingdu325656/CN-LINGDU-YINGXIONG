@@ -6,7 +6,7 @@ using System.Linq;
 using SharpDX;
 using Color = System.Drawing.Color;
 
-namespace GagongSyndra
+namespace xSaliceReligionAIO
 {
     // ReSharper disable once InconsistentNaming
     public class xSLxOrbwalker
@@ -17,7 +17,7 @@ namespace GagongSyndra
         private static readonly string[] Attacks = { "caitlynheadshotmissile", "frostarrow", "garenslash2", "kennenmegaproc", "lucianpassiveattack", "masteryidoublestrike", "quinnwenhanced", "renektonexecute", "renektonsuperexecute", "rengarnewpassivebuffdash", "trundleq", "xenzhaothrust", "viktorqbuff", "xenzhaothrust2", "xenzhaothrust3" };
 
 
-        private static Menu Menu;
+        public static Menu Menu;
         public static Obj_AI_Hero MyHero = ObjectManager.Player;
         public static Obj_AI_Base ForcedTarget = null;
         public static IEnumerable<Obj_AI_Hero> AllEnemys = ObjectManager.Get<Obj_AI_Hero>().Where(hero => hero.IsEnemy);
@@ -63,75 +63,73 @@ namespace GagongSyndra
 
             Menu = menu;
 
-            var menuDrawing = new Menu("绘制", "orb_Draw");
-			menuDrawing.AddItem(new MenuItem("orb_Draw_AARange", "AA范围").SetValue(new Circle(true, Color.FloralWhite)));
-			menuDrawing.AddItem(new MenuItem("orb_Draw_AARange_Enemy", "敌人AA范围").SetValue(new Circle(true, Color.Pink)));
-			menuDrawing.AddItem(new MenuItem("orb_Draw_Holdzone", "控制区域").SetValue(new Circle(true, Color.FloralWhite)));
-			menuDrawing.AddItem(new MenuItem("orb_Draw_MinionHPBar", "小兵血格").SetValue(new Circle(true, Color.Black)));
-			menuDrawing.AddItem(new MenuItem("orb_Draw_MinionHPBar_thickness", "血格密度").SetValue(new Slider(1, 1, 3)));
-			menuDrawing.AddItem(new MenuItem("orb_Draw_hitbox", "显示命中").SetValue(new Circle(true, Color.FloralWhite)));
-			menuDrawing.AddItem(new MenuItem("orb_Draw_Lasthit", "补兵").SetValue(new Circle(true, Color.Lime)));
-			menuDrawing.AddItem(new MenuItem("orb_Draw_nearKill", "附近小兵").SetValue(new Circle(true, Color.Gold)));
-			menu.AddSubMenu(menuDrawing);
+            var menuDrawing = new Menu("显示", "orb_Draw");
+            menuDrawing.AddItem(new MenuItem("orb_Draw_AARange", "平A范围").SetValue(new Circle(true, Color.FloralWhite)));
+            menuDrawing.AddItem(new MenuItem("orb_Draw_AARange_Enemy", "敌人平A范围").SetValue(new Circle(true, Color.Pink)));
+            menuDrawing.AddItem(new MenuItem("orb_Draw_Holdzone", "控制区域").SetValue(new Circle(true, Color.FloralWhite)));
+            menuDrawing.AddItem(new MenuItem("orb_Draw_MinionHPBar", "小兵血格").SetValue(new Circle(true, Color.Black)));
+            menuDrawing.AddItem(new MenuItem("orb_Draw_MinionHPBar_thickness", "密度").SetValue(new Slider(1, 1, 3)));
+            menuDrawing.AddItem(new MenuItem("orb_Draw_hitbox", "显示攻击").SetValue(new Circle(true, Color.FloralWhite)));
+            menuDrawing.AddItem(new MenuItem("orb_Draw_Lasthit", "显示补兵").SetValue(new Circle(true, Color.Lime)));
+            menuDrawing.AddItem(new MenuItem("orb_Draw_nearKill", "附近可杀小兵").SetValue(new Circle(true, Color.Gold)));
+            menu.AddSubMenu(menuDrawing);
 
-			var menuMisc = new Menu("杂项", "orb_Misc");
-			menuMisc.AddItem(new MenuItem("orb_Misc_Holdzone", "保持位置").SetValue(new Slider(50, 100, 0)));
-			menuMisc.AddItem(new MenuItem("orb_Misc_Farmdelay", "补兵延迟").SetValue(new Slider(0, 200, 0)));
-			menuMisc.AddItem(new MenuItem("orb_Misc_ExtraWindUp", "额外的缓冲时间").SetValue(new Slider(80, 200, 0)));
-			menuMisc.AddItem(new MenuItem("orb_Misc_AutoWindUp", "自动设置缓冲时间").SetValue(false));
-			menuMisc.AddItem(new MenuItem("orb_Misc_Priority_Unit", "优先攻击").SetValue(new StringList(new[] { "小兵", "英雄" })));
-			menuMisc.AddItem(new MenuItem("orb_Misc_Humanizer", "延迟").SetValue(new Slider(80, 200, 15)));
-			menuMisc.AddItem(new MenuItem("orb_Misc_AllMovementDisabled", "禁止移动").SetValue(false));
-			menuMisc.AddItem(new MenuItem("orb_Misc_AllAttackDisabled", "禁止所有攻击").SetValue(false));
+            var menuMisc = new Menu("杂项", "orb_Misc");
+            menuMisc.AddItem(new MenuItem("orb_Misc_Holdzone", "防守范围").SetValue(new Slider(50, 100, 0)));
+            menuMisc.AddItem(new MenuItem("orb_Misc_Farmdelay", "补兵延迟").SetValue(new Slider(0, 200, 0)));
+            menuMisc.AddItem(new MenuItem("orb_Misc_ExtraWindUp", "额外终止时间").SetValue(new Slider(80, 200, 0)));
+            menuMisc.AddItem(new MenuItem("orb_Misc_AutoWindUp", "自动设置").SetValue(false));
+            menuMisc.AddItem(new MenuItem("orb_Misc_Priority_Unit", "优先目标").SetValue(new StringList(new[] { "小兵", "英雄" })));
+            menuMisc.AddItem(new MenuItem("orb_Misc_Humanizer", "延迟").SetValue(new Slider(80, 200, 15)));
+            menuMisc.AddItem(new MenuItem("orb_Misc_AllMovementDisabled", "禁用移动").SetValue(false));
+            menuMisc.AddItem(new MenuItem("orb_Misc_AllAttackDisabled", "禁用攻击").SetValue(false));
 
-			menu.AddSubMenu(menuMisc);
+            menu.AddSubMenu(menuMisc);
 
-			var menuMelee = new Menu("团战", "orb_Melee");
-			menuMelee.AddItem(new MenuItem("orb_Melee_Prediction", "移动预测").SetValue(false));
-			menu.AddSubMenu(menuMelee);
+            var menuMelee = new Menu("团战", "orb_Melee");
+            menuMelee.AddItem(new MenuItem("orb_Melee_Prediction", "移动预判").SetValue(false));
+            menu.AddSubMenu(menuMelee);
 
-			var menuModes = new Menu("走砍模式", "orb_Modes");
-			{
-				var modeCombo = new Menu("连招", "orb_Modes_Combo");
-				modeCombo.AddItem(new MenuItem("Combo_Key", "热键").SetValue(new KeyBind(32, KeyBindType.Press)));
-				modeCombo.AddItem(new MenuItem("Combo_move", "移动").SetValue(true));
-				modeCombo.AddItem(new MenuItem("Combo_attack", "攻击").SetValue(true));
-				menuModes.AddSubMenu(modeCombo);
+            var menuModes = new Menu("走砍模式", "orb_Modes");
+            {
+                var modeCombo = new Menu("连招", "orb_Modes_Combo");
+                modeCombo.AddItem(new MenuItem("Combo_Key", "热键").SetValue(new KeyBind(32, KeyBindType.Press)));
+                modeCombo.AddItem(new MenuItem("Combo_move", "移动").SetValue(true));
+                modeCombo.AddItem(new MenuItem("Combo_attack", "攻击").SetValue(true));
+                menuModes.AddSubMenu(modeCombo);
 
-				var modeHarass = new Menu("骚扰", "orb_Modes_Harass");
-				modeHarass.AddItem(new MenuItem("Harass_Key", "热键").SetValue(new KeyBind("C".ToCharArray()[0], KeyBindType.Press)));
-				modeHarass.AddItem(new MenuItem("Harass_move", "移动").SetValue(true));
-				modeHarass.AddItem(new MenuItem("Harass_attack", "攻击").SetValue(true));
-				modeHarass.AddItem(new MenuItem("Harass_Lasthit", "补兵").SetValue(true));
-				menuModes.AddSubMenu(modeHarass);
+                var modeHarass = new Menu("骚扰", "orb_Modes_Harass");
+                modeHarass.AddItem(new MenuItem("Harass_Key", "热键").SetValue(new KeyBind("C".ToCharArray()[0], KeyBindType.Press)));
+                modeHarass.AddItem(new MenuItem("Harass_move", "移动").SetValue(true));
+                modeHarass.AddItem(new MenuItem("Harass_attack", "攻击").SetValue(true));
+                modeHarass.AddItem(new MenuItem("Harass_Lasthit", "补兵").SetValue(true));
+                menuModes.AddSubMenu(modeHarass);
 
-				var modeLaneClear = new Menu("清线", "orb_Modes_LaneClear");
-				modeLaneClear.AddItem(new MenuItem("LaneClear_Key", "热键").SetValue(new KeyBind("V".ToCharArray()[0], KeyBindType.Press)));
-				modeLaneClear.AddItem(new MenuItem("LaneClear_move", "移动").SetValue(true));
-				modeLaneClear.AddItem(new MenuItem("LaneClear_attack", "攻击").SetValue(true));
-				menuModes.AddSubMenu(modeLaneClear);
+                var modeLaneClear = new Menu("清线", "orb_Modes_LaneClear");
+                modeLaneClear.AddItem(new MenuItem("LaneClear_Key", "热键").SetValue(new KeyBind("V".ToCharArray()[0], KeyBindType.Press)));
+                modeLaneClear.AddItem(new MenuItem("LaneClear_move", "移动").SetValue(true));
+                modeLaneClear.AddItem(new MenuItem("LaneClear_attack", "攻击").SetValue(true));
+                menuModes.AddSubMenu(modeLaneClear);
 
-				var modeLaneFreeze = new Menu("混合", "orb_Modes_LaneFreeze");
-				modeLaneFreeze.AddItem(new MenuItem("LaneFreeze_Key", "热键").SetValue(new KeyBind("Z".ToCharArray()[0], KeyBindType.Press)));
-				modeLaneFreeze.AddItem(new MenuItem("LaneFreeze_move", "移动").SetValue(true));
-				modeLaneFreeze.AddItem(new MenuItem("LaneFreeze_attack", "攻击").SetValue(true));
-				menuModes.AddSubMenu(modeLaneFreeze);
+                var modeLaneFreeze = new Menu("控线", "orb_Modes_LaneFreeze");
+                modeLaneFreeze.AddItem(new MenuItem("LaneFreeze_Key", "热键").SetValue(new KeyBind("Z".ToCharArray()[0], KeyBindType.Press)));
+                modeLaneFreeze.AddItem(new MenuItem("LaneFreeze_move", "移动").SetValue(true));
+                modeLaneFreeze.AddItem(new MenuItem("LaneFreeze_attack", "攻击").SetValue(true));
+                menuModes.AddSubMenu(modeLaneFreeze);
 
-				var modeLasthit = new Menu("补兵", "orb_Modes_LastHit");
-				modeLasthit.AddItem(new MenuItem("LastHit_Key", "热键").SetValue(new KeyBind("X".ToCharArray()[0], KeyBindType.Press)));
-				modeLasthit.AddItem(new MenuItem("LastHit_move", "移动").SetValue(true));
-				modeLasthit.AddItem(new MenuItem("LastHit_attack", "攻击").SetValue(true));
-				menuModes.AddSubMenu(modeLasthit);
+                var modeLasthit = new Menu("补兵", "orb_Modes_LastHit");
+                modeLasthit.AddItem(new MenuItem("LastHit_Key", "热键").SetValue(new KeyBind("X".ToCharArray()[0], KeyBindType.Press)));
+                modeLasthit.AddItem(new MenuItem("LastHit_move", "移动").SetValue(true));
+                modeLasthit.AddItem(new MenuItem("LastHit_attack", "攻击").SetValue(true));
+                menuModes.AddSubMenu(modeLasthit);
 
-				var modeFlee = new Menu("逃跑", "orb_Modes_Flee");
-				modeFlee.AddItem(new MenuItem("Flee_Key", "热键").SetValue(new KeyBind("A".ToCharArray()[0], KeyBindType.Press)));
-				menuModes.AddSubMenu(modeFlee);
-			}
-			menu.AddSubMenu(menuModes);
-			menu.AddItem(new MenuItem("xSLx_info", "版权 by xSLx"));
-			menu.AddItem(new MenuItem("xSLx_info2", "制作: xSLx & Esk0r"));
-			menu.AddItem(new MenuItem("xSLx_info3", "汉化:無為"));
-			menu.AddItem(new MenuItem("xSLx_info4", "QQ群:386289593"));
+                var modeFlee = new Menu("逃跑", "orb_Modes_Flee");
+                modeFlee.AddItem(new MenuItem("Flee_Key", "热键").SetValue(new KeyBind("A".ToCharArray()[0], KeyBindType.Press)));
+                menuModes.AddSubMenu(modeFlee);
+            }
+            menu.AddSubMenu(menuModes);
+            menu.AddItem(new MenuItem("xSLx_info", "版权 by xSLx"));
+            menu.AddItem(new MenuItem("xSLx_info2", "制作: xSLx & Esk0r"));
 
             Drawing.OnDraw += OnDraw;
             Game.OnGameUpdate += OnUpdate;
@@ -213,9 +211,9 @@ namespace GagongSyndra
                 {
                     var attackToKill = Math.Ceiling(minion.MaxHealth / MyHero.GetAutoAttackDamage(minion, true));
                     var hpBarPosition = minion.HPBarPosition;
-                    var barWidth = minion.IsMelee() ? 71 : 76;
+                    var barWidth = minion.IsMelee() ? 75 : 80;
                     if (minion.HasBuff("turretshield", true))
-                        barWidth = 67;
+                        barWidth = 70;
                     var barDistance = (float)(barWidth / attackToKill);
                     if (Menu.Item("orb_Draw_MinionHPBar").GetValue<Circle>().Active)
                     {
@@ -223,7 +221,7 @@ namespace GagongSyndra
                         {
                             var startposition = hpBarPosition.X + 45 + barDistance * i;
                             Drawing.DrawLine(
-                                new Vector2(startposition, hpBarPosition.Y + 19),
+                                new Vector2(startposition, hpBarPosition.Y + 18),
                                 new Vector2(startposition, hpBarPosition.Y + 23),
                                 Menu.Item("orb_Draw_MinionHPBar_thickness").GetValue<Slider>().Value,
                                 Menu.Item("orb_Draw_MinionHPBar").GetValue<Circle>().Color);
@@ -402,7 +400,7 @@ namespace GagongSyndra
                             ObjectManager.Get<Obj_AI_Minion>().Where(minion => minion.IsValidTarget() && minion.Name != "Beacon" && InSoldierAttackRange(minion))
                         let t = (int)(MyHero.AttackCastDelay * 1000) - 100 + Game.Ping / 2 +
                                 1000 * (int)MyHero.Distance(minion) / (int)MyProjectileSpeed()
-                        let predHealth = HealthPrediction.GetHealthPrediction(minion, t, FarmDelay(-125))
+                        let predHealth = HealthPrediction.GetHealthPrediction(minion, t, FarmDelay()) + 3
                         where minion.Team != GameObjectTeam.Neutral && predHealth > 0 &&
                               predHealth <= GetAzirAASandwarriorDamage(minion)
                         select minion)
@@ -415,7 +413,7 @@ namespace GagongSyndra
                             ObjectManager.Get<Obj_AI_Minion>().Where(minion => minion.IsValidTarget() && minion.Name != "Beacon" && InAutoAttackRange(minion))
                         let t = (int)(MyHero.AttackCastDelay * 1000) - 100 + Game.Ping / 2 +
                                 1000 * (int)MyHero.Distance(minion) / (int)MyProjectileSpeed()
-                        let predHealth = HealthPrediction.GetHealthPrediction(minion, t, FarmDelay())
+                        let predHealth = HealthPrediction.GetHealthPrediction(minion, t, FarmDelay()) + 3
                         where minion.Team != GameObjectTeam.Neutral && predHealth > 0 &&
                               predHealth <= MyHero.GetAutoAttackDamage(minion, true)
                         select minion)
@@ -481,7 +479,7 @@ namespace GagongSyndra
                 float[] maxhealth1 = maxhealth;
                 foreach (var minion in from minion in ObjectManager.Get<Obj_AI_Minion>()
                     .Where(minion => minion.IsValidTarget() && minion.Name != "Beacon" && InSoldierAttackRange(minion))
-                                       let predHealth = HealthPrediction.LaneClearHealthPrediction(minion, (int)((MyHero.AttackDelay * 1000) * LaneClearWaitTimeMod), FarmDelay(-125))
+                                       let predHealth = HealthPrediction.LaneClearHealthPrediction(minion, (int)((MyHero.AttackDelay * 1000) * LaneClearWaitTimeMod), FarmDelay()) + 3
                                        where predHealth >=
                                              GetAzirAASandwarriorDamage(minion) + MyHero.GetAutoAttackDamage(minion, true) ||
                                              Math.Abs(predHealth - minion.Health) < float.Epsilon
@@ -498,7 +496,7 @@ namespace GagongSyndra
             maxhealth = new float[] { 0 };
             foreach (var minion in from minion in ObjectManager.Get<Obj_AI_Minion>()
                 .Where(minion => minion.IsValidTarget(GetAutoAttackRange(MyHero, minion)) && minion.Name != "Beacon")
-                                   let predHealth = HealthPrediction.LaneClearHealthPrediction(minion, (int)((MyHero.AttackDelay * 1000) * LaneClearWaitTimeMod), FarmDelay())
+                                   let predHealth = HealthPrediction.LaneClearHealthPrediction(minion, (int)((MyHero.AttackDelay * 1000) * LaneClearWaitTimeMod), FarmDelay()) + 3
                                    where predHealth >=
                                          2 * MyHero.GetAutoAttackDamage(minion, true) ||
                                          Math.Abs(predHealth - minion.Health) < float.Epsilon
@@ -574,8 +572,6 @@ namespace GagongSyndra
         private static int FarmDelay(int offset = 0)
         {
             var ret = offset;
-            if (MyHero.ChampionName == "Azir")
-                ret += 125;
             return Menu.Item("orb_Misc_Farmdelay").GetValue<Slider>().Value + ret;
         }
 

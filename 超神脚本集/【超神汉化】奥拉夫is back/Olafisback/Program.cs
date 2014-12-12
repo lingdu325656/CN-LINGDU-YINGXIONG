@@ -78,9 +78,9 @@ namespace Olafisback
             
 
             //Create the menu
-            Config = new Menu(ChampionName, ChampionName, true);
+            Config = new Menu("【超神汉化】奥拉夫", ChampionName, true);
 
-            var targetSelectorMenu = new Menu("目标现在", "Target Selector");
+            var targetSelectorMenu = new Menu("目标选择器", "Target Selector");
             SimpleTs.AddToMenu(targetSelectorMenu);
             Config.AddSubMenu(targetSelectorMenu);
 

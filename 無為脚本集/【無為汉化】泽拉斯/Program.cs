@@ -105,7 +105,7 @@ namespace Xerath
             SpellList.Add(R);
 
             //Create the menu
-            Config = new Menu(ChampionName, ChampionName, true);
+            Config = new Menu("【無為汉化】泽拉斯", ChampionName, true);
 
             //Orbwalker submenu
               Config.AddSubMenu(new Menu("走砍", "Orbwalking"));

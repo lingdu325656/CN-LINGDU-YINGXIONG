@@ -70,7 +70,7 @@ namespace LissandraLetitGoLetItGOOOOO
             DFG = Utility.Map.GetMap()._MapType == Utility.Map.MapType.TwistedTreeline || Utility.Map.GetMap()._MapType == Utility.Map.MapType.CrystalScar ? new Items.Item(3188, 750) : new Items.Item(3128, 750);
 
             //Create the menu
-            menu = new Menu(ChampionName, ChampionName, true);
+            menu = new Menu("【超神汉化】冰霜女巫", ChampionName, true);
 
             //Orbwalker submenu
             var orbwalkerMenu = new Menu("走砍", "my_Orbwalker");
