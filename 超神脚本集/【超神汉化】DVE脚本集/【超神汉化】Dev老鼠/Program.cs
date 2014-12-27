@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -10,13 +10,13 @@ using SharpDX;
 /*
  * ##### DevTwitch Mods #####
  * 
- * R KillSteal 1 AA
- * E KillSteal
  * Ult logic to Kill when 2 AA + Item
  * Smart E Use - Try to stack max of passive before cast E (keeps track of Distance, Min/Max Stacks, BuffTime)
  * Min Passive Stacks on Harras/Combo with Slider
  * Skin Hack
  * Barrier GapCloser when LowHealth
+ * R KillSteal 1 AA
+ * E KillSteal
  * Auto Spell Level UP
  * 
 */
@@ -100,7 +100,7 @@ namespace DevTwitch
 
         public static void BurstCombo()
         {
-            var eTarget = SimpleTs.GetTarget(E.Range, SimpleTs.DamageType.Physical);
+            var eTarget = TargetSelector.GetTarget(E.Range, TargetSelector.DamageType.Physical);
 
             if (eTarget == null)
                 return;
@@ -115,7 +115,7 @@ namespace DevTwitch
             // R KS (KS if 2 AA in Rrange)
             if (R.IsReady() && useR)
             {
-                var rTarget = SimpleTs.GetTarget(R.Range, SimpleTs.DamageType.Physical);
+                var rTarget = TargetSelector.GetTarget(R.Range, TargetSelector.DamageType.Physical);
 
                 if (mustDebug)
                 {
@@ -150,7 +150,7 @@ namespace DevTwitch
             if (RKillSteal && R.IsReady())
             {
                 var enemies = DevHelper.GetEnemyList().Where(x => x.IsValidTarget(R.Range) && GetRDamage(x) > x.Health).OrderBy(x => x.Health);
-                if (enemies.Count() > 0)
+                if (enemies.Any())
                 {
                     var enemy = enemies.First();
 
@@ -170,7 +170,7 @@ namespace DevTwitch
                     .Where(x => x.IsValidTarget(E.Range) && GetExpungeStacks(x) > 0 && E.GetDamage(x) * 0.9 > x.Health)
                     .OrderBy(x => x.Health);
 
-                if (query.Count() > 0)
+                if (query.Any())
                 {
                     CastE();
                 }
@@ -180,7 +180,7 @@ namespace DevTwitch
 
         public static void Combo()
         {
-            var eTarget = SimpleTs.GetTarget(E.Range, SimpleTs.DamageType.Physical);
+            var eTarget = TargetSelector.GetTarget(E.Range, TargetSelector.DamageType.Physical);
 
             if (eTarget == null)
                 return;
@@ -221,7 +221,7 @@ namespace DevTwitch
 
         public static void Harass()
         {
-            var eTarget = SimpleTs.GetTarget(E.Range, SimpleTs.DamageType.Physical);
+            var eTarget = TargetSelector.GetTarget(E.Range, TargetSelector.DamageType.Physical);
 
             if (eTarget == null)
                 return;
@@ -326,7 +326,7 @@ namespace DevTwitch
         static void AssemblyUtil_onGetVersionCompleted(OnGetVersionCompletedArgs args)
         {
             if (args.LastAssemblyVersion == Assembly.GetExecutingAssembly().GetName().Version.ToString())
-                Game.PrintChat(string.Format("<font color='#fb762d'>DevTwitch You have the lastest version.</font>"));
+                Game.PrintChat(string.Format("<font color='#fb762d'>DevTwitch You have the latest version.</font>"));
             else
                 Game.PrintChat(string.Format("<font color='#fb762d'>DevTwitch NEW VERSION available! Tap F8 for Update! {0}</font>", args.LastAssemblyVersion));        
         }
@@ -463,7 +463,7 @@ namespace DevTwitch
         {
             var query = unit.Buffs.Where(buff => buff.DisplayName.ToLower() == "twitchdeadlyvenom");
 
-            if (query.Count() > 0)
+            if (query.Any())
                 return query.First();
             else
                 return null;
@@ -473,7 +473,7 @@ namespace DevTwitch
         {
             var query = unit.Buffs.Where(buff => buff.DisplayName.ToLower() == "twitchdeadlyvenom");
 
-            if (query.Count() > 0)
+            if (query.Any())
                 return query.First().Count;
             else
                 return 0;
@@ -499,8 +499,8 @@ namespace DevTwitch
 
             Config = new Menu("【超神汉化】Dev老鼠", "DevTwitch", true);
 
-            var targetSelectorMenu = new Menu("目标选择", "Target Selector");
-            SimpleTs.AddToMenu(targetSelectorMenu);
+            var targetSelectorMenu = new Menu("目标选择器", "Target Selector");
+            TargetSelector.AddToMenu(targetSelectorMenu);
             Config.AddSubMenu(targetSelectorMenu);
 
             Config.AddSubMenu(new Menu("走砍", "Orbwalking"));
@@ -561,4 +561,4 @@ namespace DevTwitch
                 Game.PrintChat("InitializeMainMenu Finish");
         }
     }
-}	
+}
