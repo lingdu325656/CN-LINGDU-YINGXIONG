@@ -104,7 +104,7 @@ namespace Marksman
             CClass.Config = Config;
 
             var targetSelectorMenu = new Menu("目标选择", "Target Selector");
-            SimpleTs.AddToMenu(targetSelectorMenu);
+            TargetSelector.AddToMenu(targetSelectorMenu);
             Config.AddSubMenu(targetSelectorMenu);
 
             var orbwalking = Config.AddSubMenu(new Menu("走砍", "Orbwalking"));
@@ -242,7 +242,7 @@ namespace Marksman
                     if (objAiHero != null && objAiHero != xSelectedTarget)
                     {
                         xSelectedTarget = objAiHero;
-                        SimpleTs.SetTarget(objAiHero);
+                        TargetSelector.SetTarget(objAiHero);
                         Utils.PrintMessage(string.Format("{0} selected.", objAiHero.BaseSkinName));
                     }
                 }
@@ -281,7 +281,10 @@ namespace Marksman
                 }
             }
 
-            CClass.Drawing_OnDraw(args); 
+            if (CClass != null)
+            {
+                CClass.Drawing_OnDraw(args);
+            }
             return;
 
             var y = 10;
@@ -331,7 +334,7 @@ namespace Marksman
             var ghostblade = Config.Item("GHOSTBLADE").GetValue<bool>();
             var sword = Config.Item("SWORD").GetValue<bool>();
             var muramana = Config.Item("MURAMANA").GetValue<bool>();
-            var target = CClass.Orbwalker.GetTarget();
+            var target = CClass.Orbwalker.GetTarget() as Obj_AI_Base;
 
             if (botrk)
             {
@@ -391,11 +394,11 @@ namespace Marksman
                 var xCanUse = ObjectManager.Player.Health <=
                               ObjectManager.Player.MaxHealth/100*Config.Item("SUMHEALSLIDER").GetValue<Slider>().Value;
 
-                if (xCanUse && 
-                    (xSlot != SpellSlot.Unknown || ObjectManager.Player.SummonerSpellbook.CanUseSpell(xSlot) == SpellState.Ready) 
-                    && Utility.CountEnemysInRange(xDangerousRange) != 0) 
+                if (xCanUse && !Utility.InShopRange() && 
+                    (xSlot != SpellSlot.Unknown || ObjectManager.Player.Spellbook.CanUseSpell(xSlot) == SpellState.Ready) 
+                    && Utility.CountEnemysInRange(xDangerousRange) > 0) 
                 {
-                    ObjectManager.Player.SummonerSpellbook.CastSpell(xSlot);
+                    ObjectManager.Player.Spellbook.CastSpell(xSlot);
                 }
             }
             
@@ -405,32 +408,32 @@ namespace Marksman
                 var xCanUse = ObjectManager.Player.Health <=
                               ObjectManager.Player.MaxHealth/100*Config.Item("SUMBARRIERSLIDER").GetValue<Slider>().Value;
 
-                if (xCanUse && 
-                    (xSlot != SpellSlot.Unknown || ObjectManager.Player.SummonerSpellbook.CanUseSpell(xSlot) == SpellState.Ready) 
-                    && Utility.CountEnemysInRange(xDangerousRange) != 0) 
+                if (xCanUse && !Utility.InShopRange() && 
+                    (xSlot != SpellSlot.Unknown || ObjectManager.Player.Spellbook.CanUseSpell(xSlot) == SpellState.Ready) 
+                    && Utility.CountEnemysInRange(xDangerousRange) > 0) 
                 {
-                    ObjectManager.Player.SummonerSpellbook.CastSpell(xSlot);
+                    ObjectManager.Player.Spellbook.CastSpell(xSlot);
                 }
             }
             
             if (Config.Item("SUMIGNITEENABLE").GetValue<bool>())
             {
                 var xSlot = ObjectManager.Player.GetSpellSlot("summonerdot");
-                var t = CClass.Orbwalker.GetTarget();
+                var t = CClass.Orbwalker.GetTarget() as Obj_AI_Hero;
                 
                 if (t != null && xSlot != SpellSlot.Unknown &&
-                    ObjectManager.Player.SummonerSpellbook.CanUseSpell(xSlot) == SpellState.Ready)
+                    ObjectManager.Player.Spellbook.CanUseSpell(xSlot) == SpellState.Ready)
                 {
                     if (ObjectManager.Player.Distance(t) < 650 &&
                         ObjectManager.Player.GetSummonerSpellDamage(t, Damage.SummonerSpell.Ignite) >=
                         t.Health)
                     {
-                        ObjectManager.Player.SummonerSpellbook.CastSpell(xSlot, t);
+                        ObjectManager.Player.Spellbook.CastSpell(xSlot, t);
                     }
                 }
             }
-        }        
-        private static void Orbwalking_AfterAttack(Obj_AI_Base unit, Obj_AI_Base target)
+        }
+        private static void Orbwalking_AfterAttack(AttackableUnit unit, AttackableUnit target)
         {
             CClass.Orbwalking_AfterAttack(unit, target);
         }

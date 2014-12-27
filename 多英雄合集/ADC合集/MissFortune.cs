@@ -24,16 +24,17 @@ namespace Marksman
             E.SetSkillshot(0.5f, 100f, float.MaxValue, false, SkillshotType.SkillshotCircle);
         }
 
-        public override void Orbwalking_AfterAttack(Obj_AI_Base unit, Obj_AI_Base vTarget)
+        public override void Orbwalking_AfterAttack(AttackableUnit unit, AttackableUnit vTarget)
         {
-            if ((ComboActive || HarassActive) && unit.IsMe && (vTarget is Obj_AI_Hero))
+            var t = vTarget as Obj_AI_Hero;
+            if (t != null && (ComboActive || HarassActive) && unit.IsMe)
             {
                 var useQ = GetValue<bool>("UseQ" + (ComboActive ? "C" : "H"));
                 var useW = GetValue<bool>("UseW" + (ComboActive ? "C" : "H"));
 
                 if (useQ)
                 {
-                    Q.CastOnUnit(vTarget);
+                    Q.CastOnUnit(t);
                 }
                 if (useW && W.IsReady())
                     W.CastOnUnit(ObjectManager.Player);
@@ -58,46 +59,51 @@ namespace Marksman
             if (!Q.IsReady())
                 return;
 
-            var t = SimpleTs.GetTarget(Q.Range + 450, SimpleTs.DamageType.Physical);
+            var t = TargetSelector.GetTarget(Q.Range + 450, TargetSelector.DamageType.Physical);
             if (t.IsValidTarget(Q.Range))
             {
                 Q.CastOnUnit(t);
                 return;
             }
 
-            var vMinions = MinionManager.GetMinions(t.Position, Q.Range, MinionTypes.All, MinionTeam.NotAlly);
-            Obj_AI_Base[] nearstMinion = { null };
-            foreach (
-                var vMinion in
-                    vMinions.Where(
-                        minion =>
-                            minion.Distance(ObjectManager.Player) <= t.Distance(ObjectManager.Player) &&
-                            t.Distance(minion) < 400)
-                        .Where(
+            if (Program.CClass.Config.Item("UseQMC").GetValue<bool>())
+            {
+                var vMinions = MinionManager.GetMinions(t.Position, Q.Range, MinionTypes.All, MinionTeam.NotAlly);
+                Obj_AI_Base[] nearstMinion = {null};
+                foreach (
+                    var vMinion in
+                        vMinions.Where(
                             minion =>
-                                nearstMinion[0] == null ||
-                                minion.Distance(ObjectManager.Player) < nearstMinion[0].Distance(ObjectManager.Player)))
-                
-                nearstMinion[0] = vMinion;
-            if (nearstMinion[0] != null && nearstMinion[0].IsValidTarget(Q.Range))
-                Q.CastOnUnit(nearstMinion[0]);
+                                minion.Distance(ObjectManager.Player) <= t.Distance(ObjectManager.Player) &&
+                                t.Distance(minion) < 400)
+                            .Where(
+                                minion =>
+                                    nearstMinion[0] == null ||
+                                    minion.Distance(ObjectManager.Player) <
+                                    nearstMinion[0].Distance(ObjectManager.Player)))
+
+                    nearstMinion[0] = vMinion;
+                if (nearstMinion[0] != null && nearstMinion[0].IsValidTarget(Q.Range))
+                    Q.CastOnUnit(nearstMinion[0]);
+            }
         }
 
         public override void Game_OnGameUpdate(EventArgs args)
         {
             if (Q.IsReady() && GetValue<KeyBind>("UseQTH").Active)
             {
-                if(ObjectManager.Player.HasBuff("Recall"))
+                if (ObjectManager.Player.HasBuff("Recall"))
                     return;
                 CastQ();
             }
-                
+
             if (E.IsReady() && GetValue<KeyBind>("UseETH").Active)
             {
-                if(ObjectManager.Player.HasBuff("Recall"))
+                if (ObjectManager.Player.HasBuff("Recall"))
                     return;
-                var t = Orbwalker.GetTarget() ??
-                        SimpleTs.GetTarget(E.Range + E.Range / 2, SimpleTs.DamageType.Physical);
+                var t = (Orbwalker.GetTarget() ??
+                        TargetSelector.GetTarget(E.Range + E.Range / 2, TargetSelector.DamageType.Physical)) as Obj_AI_Base;
+                
                 if (t != null)
                     E.CastIfHitchanceEquals(t, HitChance.High);
             }
@@ -105,7 +111,6 @@ namespace Marksman
             if (ComboActive || HarassActive)
             {
                 var useQ = GetValue<bool>("UseQ" + (ComboActive ? "C" : "H"));
-                var useW = GetValue<bool>("UseW" + (ComboActive ? "C" : "H"));
                 var useE = GetValue<bool>("UseE" + (ComboActive ? "C" : "H"));
 
                 if (Orbwalking.CanMove(100))
@@ -117,8 +122,8 @@ namespace Marksman
 
                     if (E.IsReady() && useE)
                     {
-                        var vTarget = Orbwalker.GetTarget() ??
-                                      SimpleTs.GetTarget(E.Range + E.Range / 2, SimpleTs.DamageType.Physical);
+                        var vTarget = (Orbwalker.GetTarget() ??
+                                TargetSelector.GetTarget(E.Range + E.Range / 2, TargetSelector.DamageType.Physical)) as Obj_AI_Base;
                         if (vTarget != null)
                             E.CastIfHitchanceEquals(vTarget, HitChance.High);
                     }
@@ -134,7 +139,7 @@ namespace Marksman
                     foreach (
                         Obj_AI_Base minions in
                             vMinions.Where(
-                                minions => minions.Health < ObjectManager.Player.GetSpellDamage(minions, SpellSlot.Q)))
+                                minions => minions.Health < ObjectManager.Player.GetSpellDamage(minions, SpellSlot.Q) - 20))
                         Q.Cast(minions);
                 }
             }

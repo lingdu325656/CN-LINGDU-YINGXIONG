@@ -73,7 +73,7 @@ namespace Marksman
                     xBuffCount = buff.Count;
                 }
                 
-                return xBuffCount;
+                 return xBuffCount;
             }
         }
         public override void Game_OnGameUpdate(EventArgs args)
@@ -81,42 +81,42 @@ namespace Marksman
             if ((!ComboActive && !HarassActive) || !Orbwalking.CanMove(100))
             {
 
-            var useE = GetValue<bool>("UseE" + (ComboActive ? "C" : "H"));
+                var useE = GetValue<bool>("UseE" + (ComboActive ? "C" : "H"));
 
                 if (Q.IsReady() && GetValue<bool>("CompleteSilverBuff"))
                 {
                     var t =
-                        GetSilverBuffCountX(SimpleTs.GetTarget(Q.Range + ObjectManager.Player.AttackRange,
-                            SimpleTs.DamageType.Physical));
+                        GetSilverBuffCountX(TargetSelector.GetTarget(Q.Range + ObjectManager.Player.AttackRange,
+                            TargetSelector.DamageType.Physical));
                     if (t != null)
                     {
                         Q.Cast(Game.CursorPos);
                     }
                 }
 
-            if (E.IsReady() && useE)
-            {
-                foreach (
+                if (E.IsReady() && useE)
+                {
+                    foreach (
                         var hero in
                             from hero in ObjectManager.Get<Obj_AI_Hero>().Where(hero => hero.IsValidTarget(550f))
-                        let prediction = E.GetPrediction(hero)
-                        where NavMesh.GetCollisionFlags(
-                            prediction.UnitPosition.To2D()
-                                .Extend(ObjectManager.Player.ServerPosition.To2D(),
-                                    -GetValue<Slider>("PushDistance").Value)
-                                .To3D())
-                            .HasFlag(CollisionFlags.Wall) || NavMesh.GetCollisionFlags(
+                            let prediction = E.GetPrediction(hero)
+                            where NavMesh.GetCollisionFlags(
                                 prediction.UnitPosition.To2D()
                                     .Extend(ObjectManager.Player.ServerPosition.To2D(),
-                                        -(GetValue<Slider>("PushDistance").Value/2))
+                                        -GetValue<Slider>("PushDistance").Value)
                                     .To3D())
-                                .HasFlag(CollisionFlags.Wall)
-                        select hero)
-                {
-                    E.Cast(hero);
+                                .HasFlag(CollisionFlags.Wall) || NavMesh.GetCollisionFlags(
+                                    prediction.UnitPosition.To2D()
+                                        .Extend(ObjectManager.Player.ServerPosition.To2D(),
+                                            -(GetValue<Slider>("PushDistance").Value/2))
+                                        .To3D())
+                                    .HasFlag(CollisionFlags.Wall)
+                            select hero)
+                    {
+                        E.Cast(hero);
+                    }
                 }
             }
-        }
 
             if (LaneClearActive)
             {
@@ -134,7 +134,7 @@ namespace Marksman
             }
         }
 
-        public override void Orbwalking_AfterAttack(Obj_AI_Base unit, Obj_AI_Base target)
+        public override void Orbwalking_AfterAttack(AttackableUnit unit, AttackableUnit target)
         {
             var useQ =
                 GetValue<bool>("UseQ" +

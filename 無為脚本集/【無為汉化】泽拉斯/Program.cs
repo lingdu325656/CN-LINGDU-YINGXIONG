@@ -1,4 +1,4 @@
-#region
+﻿#region
 
 using System;
 using System.Collections.Generic;
@@ -111,8 +111,8 @@ namespace Xerath
               Config.AddSubMenu(new Menu("走砍", "Orbwalking"));
 
             //Add the target selector to the menu as submenu.
-            var targetSelectorMenu = new Menu("目标选择", "Target Selector");
-            SimpleTs.AddToMenu(targetSelectorMenu);
+            var targetSelectorMenu = new Menu("目标选择器", "Target Selector");
+            TargetSelector.AddToMenu(targetSelectorMenu);
             Config.AddSubMenu(targetSelectorMenu);
 
             //Load the orbwalker and add it to the menu as submenu.
@@ -231,12 +231,12 @@ namespace Xerath
             Game.OnWndProc += Game_OnWndProc;
             Game.PrintChat(ChampionName + " Loaded!");
             Orbwalking.BeforeAttack += OrbwalkingOnBeforeAttack;
-            Game.OnGameSendPacket += GameOnOnGameSendPacket;
+            Obj_AI_Hero.OnIssueOrder += Obj_AI_Hero_OnIssueOrder;
         }
 
-        private static void GameOnOnGameSendPacket(GamePacketEventArgs args)
+        static void Obj_AI_Hero_OnIssueOrder(Obj_AI_Base sender, GameObjectIssueOrderEventArgs args)
         {
-            if (args.PacketData[0] == Packet.C2S.Move.Header && IsCastingR && Config.Item("BlockMovement").GetValue<bool>())
+            if (IsCastingR && Config.Item("BlockMovement").GetValue<bool>())
             {
                 args.Process = false;
             }
@@ -309,9 +309,9 @@ namespace Xerath
 
         private static void UseSpells(bool useQ, bool useW, bool useE)
         {
-            var qTarget = SimpleTs.GetTarget(Q.ChargedMaxRange, SimpleTs.DamageType.Magical);
-            var wTarget = SimpleTs.GetTarget(W.Range + W.Width * 0.5f, SimpleTs.DamageType.Magical);
-            var eTarget = SimpleTs.GetTarget(E.Range, SimpleTs.DamageType.Magical);
+            var qTarget = TargetSelector.GetTarget(Q.ChargedMaxRange, TargetSelector.DamageType.Magical);
+            var wTarget = TargetSelector.GetTarget(W.Range + W.Width * 0.5f, TargetSelector.DamageType.Magical);
+            var eTarget = TargetSelector.GetTarget(E.Range, TargetSelector.DamageType.Magical);
 
             if (eTarget != null && useE && E.IsReady())
             {
@@ -342,21 +342,21 @@ namespace Xerath
             Obj_AI_Hero bestTarget = null;
             var bestRatio = 0f;
 
-            if (SimpleTs.SelectedTarget.IsValidTarget() && !SimpleTs.IsInvulnerable(SimpleTs.SelectedTarget) &&
-                (Game.CursorPos.Distance(SimpleTs.SelectedTarget.ServerPosition) < distance && ObjectManager.Player.Distance(SimpleTs.SelectedTarget) < R.Range))
+            if (TargetSelector.SelectedTarget.IsValidTarget() && !TargetSelector.IsInvulnerable(TargetSelector.SelectedTarget, TargetSelector.DamageType.Magical, true) &&
+                (Game.CursorPos.Distance(TargetSelector.SelectedTarget.ServerPosition) < distance && ObjectManager.Player.Distance(TargetSelector.SelectedTarget) < R.Range))
             {
-                return SimpleTs.SelectedTarget;
+                return TargetSelector.SelectedTarget;
             }
 
             foreach (var hero in ObjectManager.Get<Obj_AI_Hero>())
             {
-                if (!hero.IsValidTarget(R.Range) || SimpleTs.IsInvulnerable(hero) || Game.CursorPos.Distance(hero.ServerPosition) > distance)
+                if (!hero.IsValidTarget(R.Range) || TargetSelector.IsInvulnerable(hero, TargetSelector.DamageType.Magical, true) || Game.CursorPos.Distance(hero.ServerPosition) > distance)
                 {
                     continue;
                 }
 
                 var damage = (float)ObjectManager.Player.CalcDamage(hero, Damage.DamageType.Magical, 100);
-                var ratio = damage / (1 + hero.Health) * SimpleTs.GetPriority(hero);
+                var ratio = damage / (1 + hero.Health) * TargetSelector.GetPriority(hero);
 
                 if (ratio > bestRatio)
                 {
@@ -373,7 +373,8 @@ namespace Xerath
             if (!Config.Item("EnableRUsage").GetValue<bool>()) return;
             var rMode = Config.Item("rMode").GetValue<StringList>().SelectedIndex;
 
-            var rTarget = SimpleTs.GetTarget(R.Range, SimpleTs.DamageType.Magical);
+            var rTarget = Config.Item("OnlyNearMouse").GetValue<bool>() ? GetTargetNearMouse(Config.Item("MRadius").GetValue<Slider>().Value) : TargetSelector.GetTarget(R.Range, TargetSelector.DamageType.Magical);
+
             if (rTarget != null)
             {
                 //Wait at least 0.6f if the target is going to die or if the target is to far away

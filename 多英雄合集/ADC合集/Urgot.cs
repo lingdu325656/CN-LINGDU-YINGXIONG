@@ -1,12 +1,10 @@
 ﻿#region
-
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using LeagueSharp;
 using LeagueSharp.Common;
-
 #endregion
 
 namespace Marksman
@@ -47,7 +45,7 @@ namespace Marksman
                     return false;
                 }
                 if (!turret.IsEnemy)
-                    {
+                {
                     return true;
                 }
                 return false;
@@ -106,7 +104,7 @@ namespace Marksman
 
             if (Q.IsReady() && useQ)
             {
-                t = SimpleTs.GetTarget(QEx.Range, SimpleTs.DamageType.Physical);
+                t = TargetSelector.GetTarget(QEx.Range, TargetSelector.DamageType.Physical);
                 if (t != null && t.HasBuff("urgotcorrosivedebuff", true))
                 {
                     W.Cast();
@@ -114,7 +112,7 @@ namespace Marksman
                 }
                 else
                 {
-                    t = SimpleTs.GetTarget(Q.Range, SimpleTs.DamageType.Physical);
+                    t = TargetSelector.GetTarget(Q.Range, TargetSelector.DamageType.Physical);
                     if (t != null)
                     {
                         if (Q.GetPrediction(t).Hitchance >= HitChance.High)
@@ -126,14 +124,14 @@ namespace Marksman
 
             if (W.IsReady() && useW)
             {
-                t = SimpleTs.GetTarget(ObjectManager.Player.AttackRange - 30, SimpleTs.DamageType.Physical);
+                t = TargetSelector.GetTarget(ObjectManager.Player.AttackRange - 30, TargetSelector.DamageType.Physical);
                 if (t != null)
                     W.Cast();
             }
 
             if (E.IsReady() && useE)
             {
-                t = SimpleTs.GetTarget(E.Range, SimpleTs.DamageType.Physical);
+                t = TargetSelector.GetTarget(E.Range, TargetSelector.DamageType.Physical);
                 if (t != null)
                     E.Cast(t);
             }
@@ -148,7 +146,7 @@ namespace Marksman
 
             if (R.IsReady() && Program.CClass.GetValue<bool>("UseRC"))
             {
-                var t = SimpleTs.GetTarget(R.Range, SimpleTs.DamageType.Physical);
+                var t = TargetSelector.GetTarget(R.Range, TargetSelector.DamageType.Physical);
                 if (t != null && UnderAllyTurret(ObjectManager.Player) && !UnderAllyTurret(t) &&
                     ObjectManager.Player.Distance(t) > 200)
                 {
@@ -165,8 +163,8 @@ namespace Marksman
 
             Drawing.DrawText(Drawing.Width * 0.42f, Drawing.Height * 0.80f, Color.GreenYellow,
             "Teleport enemy to my team active!");
-
-            var t = SimpleTs.GetTarget(R.Range, SimpleTs.DamageType.Physical);
+            
+            var t = TargetSelector.GetTarget(R.Range, TargetSelector.DamageType.Physical);
             if (R.IsReady() && t != null)
             {
                 IEnumerable<Obj_AI_Hero> Ally =
@@ -187,6 +185,9 @@ namespace Marksman
 
         public override void Game_OnGameUpdate(EventArgs args)
         {
+            if (Orbwalking.CanMove(100))
+                return;
+            
             R.Range = 150 * R.Level + 400;
 
             if (GetValue<KeyBind>("UltOp1").Active)
@@ -199,13 +200,14 @@ namespace Marksman
                 UltInMyTeam();
             }
 
-            if ((ComboActive && !HarassActive) || Orbwalking.CanMove(100))
+            if (ComboActive || HarassActive)
             {
-            var useQ = GetValue<bool>("UseQ" + (ComboActive ? "C" : "H"));
-                var useW = GetValue<bool>("UseWC");
-            var useE = GetValue<bool>("UseEC");
-
-                UseSpells(useQ, useW, useE);
+                UseSpells
+                (
+                    GetValue<bool>("UseQ" + (ComboActive ? "C" : "H")), 
+                    GetValue<bool>("UseWC"),
+                    GetValue<bool>("UseEC")
+                );
             }
 
             if (LaneClearActive)
@@ -213,7 +215,7 @@ namespace Marksman
                 bool useQ = GetValue<bool>("UseQL");
 
                 if (Q.IsReady() && useQ)
-            {
+                {
                     var vMinions = MinionManager.GetMinions(ObjectManager.Player.Position, Q.Range);
                     foreach (
                         Obj_AI_Base minions in
@@ -222,15 +224,6 @@ namespace Marksman
                         Q.Cast(minions);
                 }
             }
-        }
-
-        public override void Orbwalking_AfterAttack(Obj_AI_Base unit, Obj_AI_Base target)
-        {
-            if ((!ComboActive && !HarassActive) || unit.IsMe || (!(target is Obj_AI_Hero))) return;
-
-            var useQ = GetValue<bool>("UseQ" + (ComboActive ? "C" : "H"));
-            if (useQ)
-                Q.Cast(target, false, true);
         }
 
         public override bool ComboMenu(Menu config)
@@ -303,4 +296,4 @@ namespace Marksman
         }
 
     }
-    }
+}

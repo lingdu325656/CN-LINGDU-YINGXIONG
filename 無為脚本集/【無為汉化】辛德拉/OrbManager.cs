@@ -63,17 +63,17 @@ namespace Syndra
         public static Obj_AI_Minion WObject(bool onlyOrb)
         {
             if (WObjectNetworkId == -1) return null;
-            var obj = ObjectManager.GetUnitByNetworkId<Obj_AI_Minion>(WObjectNetworkId);
-            if (obj != null && obj.IsValid && (obj.Name == "Seed" && onlyOrb || !onlyOrb)) return obj;
+            var obj = ObjectManager.GetUnitByNetworkId<Obj_AI_Base>(WObjectNetworkId);
+            if (obj != null && obj.IsValid<Obj_AI_Minion>() && (obj.Name == "Seed" && onlyOrb || !onlyOrb)) return (Obj_AI_Minion)obj;
             return null;
         }
 
         private static void Game_OnGameProcessPacket(GamePacketEventArgs args)
         {
-            if (args.PacketData[0] == 0x71)
+            if (args.PacketData[0] == 0xC1)
             {
                 var packet = new GamePacket(args.PacketData);
-                packet.Position = 1;
+                packet.Position = 2;
                 var networkId = packet.ReadInteger();
                 WObjectNetworkId = networkId;
             }
@@ -87,6 +87,7 @@ namespace Syndra
                     ObjectManager.Get<Obj_AI_Minion>()
                         .Where(obj => obj.IsValid && obj.Team == ObjectManager.Player.Team && obj.Name == "Seed"))
             {
+                
                 var valid = false;
                 if (obj.NetworkId != WObjectNetworkId)
                     if (
