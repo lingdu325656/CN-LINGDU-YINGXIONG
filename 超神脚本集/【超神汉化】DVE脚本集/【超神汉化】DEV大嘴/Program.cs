@@ -109,7 +109,7 @@ namespace DevKogMaw
 
         public static void Combo()
         {
-            var eTarget = SimpleTs.GetTarget(E.Range, SimpleTs.DamageType.Magical);
+            var eTarget = TargetSelector.GetTarget(E.Range, TargetSelector.DamageType.Magical);
 
             if (eTarget == null)
                 return;
@@ -159,7 +159,7 @@ namespace DevKogMaw
 
         public static void Harass()
         {
-            var eTarget = SimpleTs.GetTarget(E.Range, SimpleTs.DamageType.Magical);
+            var eTarget = TargetSelector.GetTarget(E.Range, TargetSelector.DamageType.Magical);
 
             if (eTarget == null)
                 return;
@@ -234,7 +234,7 @@ namespace DevKogMaw
             if (mustDebug)
                 Game.PrintChat("CastAssistedUlt Start");
 
-            var eTarget = SimpleTs.GetTarget(R.Range, SimpleTs.DamageType.Magical);
+            var eTarget = TargetSelector.GetTarget(R.Range, TargetSelector.DamageType.Magical);
 
             if (eTarget == null)
                 return;
@@ -309,7 +309,7 @@ namespace DevKogMaw
 
             if (ChaseEnemyAfterDeath)
             {
-                var eTarget = SimpleTs.GetTarget(E.Range, SimpleTs.DamageType.Magical);
+                var eTarget = TargetSelector.GetTarget(E.Range, TargetSelector.DamageType.Magical);
 
                 if (eTarget == null)
                     return;
@@ -373,7 +373,7 @@ namespace DevKogMaw
         static void AssemblyUtil_onGetVersionCompleted(OnGetVersionCompletedArgs args)
         {
             if (args.LastAssemblyVersion == Assembly.GetExecutingAssembly().GetName().Version.ToString())
-                Game.PrintChat(string.Format("<font color='#fb762d'>DevKogMaw You have the lastest version.</font>"));
+                Game.PrintChat(string.Format("<font color='#fb762d'>DevKogMaw You have the latest version.</font>"));
             else
                 Game.PrintChat(string.Format("<font color='#fb762d'>DevKogMaw NEW VERSION available! Tap F8 for Update! {0}</font>", args.LastAssemblyVersion));
         }
@@ -673,7 +673,7 @@ namespace DevKogMaw
             Config = new Menu("【超神汉化】DEV大嘴", "DevKogMaw", true);
 
             var targetSelectorMenu = new Menu("目标选择", "Target Selector");
-            SimpleTs.AddToMenu(targetSelectorMenu);
+            TargetSelector.AddToMenu(targetSelectorMenu);
             Config.AddSubMenu(targetSelectorMenu);
 
             Config.AddSubMenu(new Menu("走砍", "Orbwalking"));

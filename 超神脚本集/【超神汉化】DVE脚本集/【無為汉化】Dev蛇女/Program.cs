@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -105,7 +105,7 @@ namespace DevCassio
         
         public static void BurstCombo()
         {
-            var eTarget = SimpleTs.GetTarget(R.Range, SimpleTs.DamageType.Magical);
+            var eTarget = TargetSelector.GetTarget(R.Range, TargetSelector.DamageType.Magical);
 
             if (eTarget == null)
                 return;
@@ -174,7 +174,7 @@ namespace DevCassio
 
         public static void Combo()
         {
-            var eTarget = SimpleTs.GetTarget(W.Range, SimpleTs.DamageType.Magical);
+            var eTarget = TargetSelector.GetTarget(W.Range, TargetSelector.DamageType.Magical);
 
             if (eTarget == null)
                 return;
@@ -261,7 +261,7 @@ namespace DevCassio
 
         public static void Harass()
         {
-            var eTarget = SimpleTs.GetTarget(Q.Range, SimpleTs.DamageType.Magical);
+            var eTarget = TargetSelector.GetTarget(Q.Range, TargetSelector.DamageType.Magical);
 
             if (eTarget == null)
                 return;
@@ -581,7 +581,7 @@ namespace DevCassio
         static void AssemblyUtil_onGetVersionCompleted(OnGetVersionCompletedArgs args)
         {
             if (args.LastAssemblyVersion == Assembly.GetExecutingAssembly().GetName().Version.ToString())
-                Game.PrintChat(string.Format("<font color='#fb762d'>DevCassio You have the lastest version.</font>"));
+                Game.PrintChat(string.Format("<font color='#fb762d'>DevCassio You have the latest version.</font>"));
             else
                 Game.PrintChat(string.Format("<font color='#fb762d'>DevCassio NEW VERSION available! Tap F8 for Update! {0}</font>", args.LastAssemblyVersion));
         }
@@ -622,8 +622,12 @@ namespace DevCassio
             {
                 args.Process = Config.Item("UseAACombo").GetValue<bool>();
 
-                if (E.IsReady() && args.Target.HasBuffOfType(BuffType.Poison) && args.Target.IsValidTarget(E.Range))
-                    args.Process = false;
+                if (args.Target is Obj_AI_Base)
+                {
+                    var target = args.Target as Obj_AI_Base;
+                    if (E.IsReady() && target.HasBuffOfType(BuffType.Poison) && target.IsValidTarget(E.Range))
+                        args.Process = false;
+                }
             }
         }
 
@@ -633,7 +637,7 @@ namespace DevCassio
                 Game.PrintChat("InitializeSpells Start");
 
             Q = new Spell(SpellSlot.Q, 850);
-            Q.SetSkillshot(0.6f, 90, float.MaxValue, false, SkillshotType.SkillshotCircle);
+            Q.SetSkillshot(0.4f, 90, float.MaxValue, false, SkillshotType.SkillshotCircle);
 
             W = new Spell(SpellSlot.W, 850);
             W.SetSkillshot(0.5f, 150, 2500, false, SkillshotType.SkillshotCircle);
@@ -779,8 +783,8 @@ namespace DevCassio
 
             Config = new Menu("【無為汉化】Dev蛇女", "DevCassio", true);
 
-            var targetSelectorMenu = new Menu("目标选择", "Target Selector");
-            SimpleTs.AddToMenu(targetSelectorMenu);
+            var targetSelectorMenu = new Menu("目标选择器, "Target Selector");
+            TargetSelector.AddToMenu(targetSelectorMenu);
             Config.AddSubMenu(targetSelectorMenu);
 
             Config.AddSubMenu(new Menu("走砍", "Orbwalking"));

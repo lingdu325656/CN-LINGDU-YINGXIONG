@@ -120,9 +120,26 @@ namespace DevCommom
         private static readonly string[] NoAttacks = { "jarvanivcataclysmattack", "monkeykingdoubleattack", "shyvanadoubleattack", "shyvanadoubleattackdragon", "zyragraspingplantattack", "zyragraspingplantattack2", "zyragraspingplantattackfire", "zyragraspingplantattack2fire" };
         private static readonly string[] Attacks = { "caitlynheadshotmissile", "frostarrow", "garenslash2", "kennenmegaproc", "lucianpassiveattack", "masteryidoublestrike", "quinnwenhanced", "renektonexecute", "renektonsuperexecute", "rengarnewpassivebuffdash", "trundleq", "xenzhaothrust", "viktorqbuff", "xenzhaothrust2", "xenzhaothrust3" };
 
-        public static bool IsAutoAttack(string name)
+        public static bool IsAutoAttack(string spellName)
         {
-            return (name.ToLower().Contains("attack") && !NoAttacks.Contains(name.ToLower())) || Attacks.Contains(name.ToLower());
+            return (spellName.ToLower().Contains("attack") && !NoAttacks.Contains(spellName.ToLower())) || Attacks.Contains(spellName.ToLower());
+        }
+
+        public static bool IsMinion(AttackableUnit unit, bool includeWards = false)
+        {
+            if (unit is Obj_AI_Minion)
+            {
+                var minion = unit as Obj_AI_Minion;
+                var name = minion.BaseSkinName.ToLower();
+                return name.Contains("minion") || (includeWards && (name.Contains("ward") || name.Contains("trinket")));
+            }
+            else
+                return false;
+        }
+
+        public static float GetRealDistance(GameObject unit, GameObject target)
+        {
+            return unit.Position.Distance(target.Position) + unit.BoundingRadius + target.BoundingRadius;
         }
     }
 }

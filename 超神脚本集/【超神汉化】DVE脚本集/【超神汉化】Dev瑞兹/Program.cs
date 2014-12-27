@@ -91,7 +91,7 @@ namespace DevRyze
         static void AssemblyUtil_onGetVersionCompleted(OnGetVersionCompletedArgs args)
         {
             if (args.LastAssemblyVersion == Assembly.GetExecutingAssembly().GetName().Version.ToString())
-                Game.PrintChat(string.Format("<font color='#fb762d'>DevRyze You have the lastest version.</font>"));
+                Game.PrintChat(string.Format("<font color='#fb762d'>DevRyze You have the latest version.</font>"));
             else
                 Game.PrintChat(string.Format("<font color='#fb762d'>DevRyze NEW VERSION available! Tap F8 for Update! {0}</font>", args.LastAssemblyVersion));
         }
@@ -182,6 +182,49 @@ namespace DevRyze
                 Game.PrintChat("InitializeAttachEvents Finish");
         }
 
+        static void Orbwalking_AfterAttack(AttackableUnit unit, AttackableUnit target)
+        {
+            var packetCast = Config.Item("PacketCast").GetValue<bool>();
+
+            if (Orbwalker.ActiveMode == Orbwalking.OrbwalkingMode.LastHit ||
+                Orbwalker.ActiveMode == Orbwalking.OrbwalkingMode.LaneClear ||
+                Orbwalker.ActiveMode == Orbwalking.OrbwalkingMode.Mixed)
+            {
+                if (DevHelper.IsMinion(target))
+                {
+                    var MinionList = MinionManager.GetMinions(Player.Position, Q.Range, MinionTypes.All, MinionTeam.Enemy, MinionOrderTypes.Health)
+                        .Where(x =>
+                            !x.IsDead && target.NetworkId != x.NetworkId && !MinionListToIgnore.Contains(x.NetworkId) &&
+                            HealthPrediction.LaneClearHealthPrediction(x, (int)(Player.AttackDelay * 1000 * 1.1)) <= 0).ToList();
+
+                    if (MinionList.Any())
+                    {
+                        var mob = MinionList.First();
+                        if (Q.IsReady() && mob.IsValidTarget(Q.Range))
+                        {
+                            Q.CastOnUnit(mob, packetCast);
+                            MinionListToIgnore.Add(mob.NetworkId);
+                            MinionList.Remove(mob);
+                            if (mustDebug)
+                                Game.PrintChat("AfterAttack -> Q Secure Gold");
+                        }
+                    }
+
+                    if (MinionList.Any())
+                    {
+                        var mob = MinionList.First();
+                        if (E.IsReady() && mob.IsValidTarget(E.Range))
+                        {
+                            E.CastOnUnit(mob, packetCast);
+                            MinionListToIgnore.Add(mob.NetworkId);
+                            if (mustDebug)
+                                Game.PrintChat("AfterAttack -> E Secure Gold");
+                        }
+                    }
+                }
+            }
+        }
+
 
         static void Obj_AI_Hero_OnProcessSpellCast(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
         {
@@ -258,48 +301,6 @@ namespace DevRyze
             }
         }
 
-        static void Orbwalking_AfterAttack(Obj_AI_Base unit, Obj_AI_Base target)
-        {
-            var packetCast = Config.Item("PacketCast").GetValue<bool>();
-
-            if (Orbwalker.ActiveMode == Orbwalking.OrbwalkingMode.LastHit ||
-                Orbwalker.ActiveMode == Orbwalking.OrbwalkingMode.LaneClear ||
-                Orbwalker.ActiveMode == Orbwalking.OrbwalkingMode.Mixed)
-            {
-                if (target.IsMinion)
-                {
-                    var MinionList = MinionManager.GetMinions(Player.Position, Q.Range, MinionTypes.All, MinionTeam.Enemy, MinionOrderTypes.Health)
-                        .Where(x => 
-                            !x.IsDead && target.NetworkId != x.NetworkId && !MinionListToIgnore.Contains(x.NetworkId) &&
-                            HealthPrediction.LaneClearHealthPrediction(x, (int)(Player.AttackDelay * 1000 * 1.1)) <= 0).ToList();
-
-                    if (MinionList.Any())
-                    { 
-                        var mob = MinionList.First();
-                        if (Q.IsReady() && mob.IsValidTarget(Q.Range))
-                        {
-                            Q.CastOnUnit(mob, packetCast);
-                            MinionListToIgnore.Add(mob.NetworkId);
-                            MinionList.Remove(mob);
-                            if (mustDebug)
-                                Game.PrintChat("AfterAttack -> Q Secure Gold");
-                        }
-                    }
-
-                    if (MinionList.Any())
-                    {
-                        var mob = MinionList.First();
-                        if (E.IsReady() && mob.IsValidTarget(E.Range))
-                        {
-                            E.CastOnUnit(mob, packetCast);
-                            MinionListToIgnore.Add(mob.NetworkId);
-                            if (mustDebug)
-                                Game.PrintChat("AfterAttack -> E Secure Gold");
-                        }
-                    }
-                }
-            }
-        }
 
         private static float GetComboDamage(Obj_AI_Hero enemy)
         {
@@ -408,7 +409,7 @@ namespace DevRyze
 
         public static void ChaseEnemy()
         {
-            var eTarget = SimpleTs.GetTarget(Q.Range, SimpleTs.DamageType.Magical);
+            var eTarget = TargetSelector.GetTarget(Q.Range, TargetSelector.DamageType.Magical);
 
             Orbwalking.Orbwalk(eTarget, Game.CursorPos);
 
@@ -436,7 +437,7 @@ namespace DevRyze
 
         public static void BurstCombo()
         {
-            var eTarget = SimpleTs.GetTarget(Q.Range, SimpleTs.DamageType.Magical);
+            var eTarget = TargetSelector.GetTarget(Q.Range, TargetSelector.DamageType.Magical);
 
             if (eTarget == null)
                 return;
@@ -489,7 +490,7 @@ namespace DevRyze
 
         public static void Combo()
         {
-            var eTarget = SimpleTs.GetTarget(Q.Range, SimpleTs.DamageType.Magical);
+            var eTarget = TargetSelector.GetTarget(Q.Range, TargetSelector.DamageType.Magical);
 
             if (eTarget == null)
                 return;
@@ -532,7 +533,7 @@ namespace DevRyze
 
         public static void Harass()
         {
-            var eTarget = SimpleTs.GetTarget(Q.Range, SimpleTs.DamageType.Magical);
+            var eTarget = TargetSelector.GetTarget(Q.Range, TargetSelector.DamageType.Magical);
 
             if (eTarget == null)
                 return;
@@ -746,8 +747,8 @@ namespace DevRyze
 
             Config = new Menu("【超神汉化】Dev瑞兹", "DevRyze", true);
 
-            var targetSelectorMenu = new Menu("目标选择", "Target Selector");
-            SimpleTs.AddToMenu(targetSelectorMenu);
+            var targetSelectorMenu = new Menu("目标选择器", "Target Selector");
+            TargetSelector.AddToMenu(targetSelectorMenu);
             Config.AddSubMenu(targetSelectorMenu);
 
             Config.AddSubMenu(new Menu("走砍", "Orbwalking"));
