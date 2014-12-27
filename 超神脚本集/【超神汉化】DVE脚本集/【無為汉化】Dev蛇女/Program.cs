@@ -783,7 +783,7 @@ namespace DevCassio
 
             Config = new Menu("【無為汉化】Dev蛇女", "DevCassio", true);
 
-            var targetSelectorMenu = new Menu("目标选择器, "Target Selector");
+            var targetSelectorMenu = new Menu("目标选择器", "Target Selector");
             TargetSelector.AddToMenu(targetSelectorMenu);
             Config.AddSubMenu(targetSelectorMenu);
 
