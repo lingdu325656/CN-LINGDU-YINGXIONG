@@ -63,7 +63,7 @@ namespace YasuoSharpV2
                     Orbwalker = new Orbwalking.Orbwalker(Config.SubMenu("Orbwalker"));
                     //TS
                     var TargetSelectorMenu = new Menu("目标选择", "Target Selector");
-                    SimpleTs.AddToMenu(TargetSelectorMenu);
+                    TargetSelector.AddToMenu(TargetSelectorMenu);
                     Config.AddSubMenu(TargetSelectorMenu);
                     //Combo
                     Config.AddSubMenu(new Menu("连招", "combo"));

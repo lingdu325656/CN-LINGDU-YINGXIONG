@@ -56,7 +56,7 @@ namespace KhazixSharp
                 Khazix.orbwalker = new Orbwalking.Orbwalker(Config.SubMenu("Orbwalker"));
                 //TS
                 var TargetSelectorMenu = new Menu("目标选择", "Target Selector");
-                SimpleTs.AddToMenu(TargetSelectorMenu);
+                TargetSelector.AddToMenu(TargetSelectorMenu);
                 Config.AddSubMenu(TargetSelectorMenu);
                 //Combo
                 Config.AddSubMenu(new Menu("连招", "combo"));
@@ -109,7 +109,7 @@ namespace KhazixSharp
 
                 if (Khazix.orbwalker.ActiveMode.ToString() == "Combo")
                 {
-                    Obj_AI_Hero target = SimpleTs.GetTarget(Khazix.getBestRange(), SimpleTs.DamageType.Physical);
+                    Obj_AI_Hero target = TargetSelector.GetTarget(Khazix.getBestRange(), TargetSelector.DamageType.Physical);
 
                     Khazix.checkUpdatedSpells();
 
@@ -119,7 +119,7 @@ namespace KhazixSharp
                 }
                 if (Config.Item("harassBtn").GetValue<KeyBind>().Active)
                 {
-                    Obj_AI_Hero target = SimpleTs.GetTarget(Khazix.getBestRange(), SimpleTs.DamageType.Physical);
+                    Obj_AI_Hero target = TargetSelector.GetTarget(Khazix.getBestRange(), TargetSelector.DamageType.Physical);
 
 
                     Khazix.doHarass(target);
