@@ -129,7 +129,7 @@ namespace Xerath
                         new KeyBind(Config.Item("Orbwalk").GetValue<KeyBind>().Key, KeyBindType.Press)));
 
             //Misc
-            Config.AddSubMenu(new Menu("R", "R"));
+            Config.AddSubMenu(new Menu("大招设置", "R"));
             Config.SubMenu("R").AddItem(new MenuItem("EnableRUsage", "自动使用大招").SetValue(true));
             Config.SubMenu("R").AddItem(new MenuItem("rMode", "模式").SetValue(new StringList(new[] { "正常", "自定义", "OnTap"})));
             Config.SubMenu("R").AddItem(new MenuItem("rModeKey", "OnTap按钮").SetValue(new KeyBind("T".ToCharArray()[0], KeyBindType.Press)));
@@ -138,7 +138,8 @@ namespace Xerath
                 Config.SubMenu("R").SubMenu("Custom delays").AddItem(new MenuItem("Delay"+i, "Delay"+i).SetValue(new Slider(0, 1500, 0)));
             Config.SubMenu("R").AddItem(new MenuItem("PingRKillable", "可击杀目标 本地ping)").SetValue(true));
             Config.SubMenu("R").AddItem(new MenuItem("BlockMovement", "有障碍物时等待投掷R").SetValue(false));
-            
+            Config.SubMenu("R").AddItem(new MenuItem("OnlyNearMouse", "只关注目标附近的敌人").SetValue(false));
+            Config.SubMenu("R").AddItem(new MenuItem("MRadius", "半径").SetValue(new Slider(700, 1500, 300)));
 
             //Harass menu:
             Config.AddSubMenu(new Menu("骚扰", "Harass"));
