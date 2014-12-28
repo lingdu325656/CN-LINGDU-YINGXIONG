@@ -69,8 +69,8 @@ namespace MasterSharp
                 Config.AddSubMenu(targetSelectorMenu);
                 //Combo
                 Config.AddSubMenu(new Menu("连招", "combo"));
-                Config.SubMenu("combo").AddItem(new MenuItem("comboItems", "Meh everything is fine here")).SetValue(true);
-                Config.SubMenu("combo").AddItem(new MenuItem("comboWreset", "AA reset W")).SetValue(true);
+                Config.SubMenu("combo").AddItem(new MenuItem("comboItems", "使用物品")).SetValue(true);
+                Config.SubMenu("combo").AddItem(new MenuItem("comboWreset", "W时不平A")).SetValue(true);
                 Config.SubMenu("combo").AddItem(new MenuItem("useQ", "使用Q突进")).SetValue(true);
                 Config.SubMenu("combo").AddItem(new MenuItem("useE", "使用E")).SetValue(true);
                 Config.SubMenu("combo").AddItem(new MenuItem("useR", "使用R")).SetValue(true);
